@@ -31,6 +31,7 @@ export class Store {
     this._committing = false
     // 用来存储用户定义的所有的 actions
     this._actions = Object.create(null)
+    // 存储 dispatch 的订阅回调函数
     this._actionSubscribers = []
     // 用来存储用户定义所有的 mutatins
     this._mutations = Object.create(null)
@@ -165,7 +166,7 @@ export class Store {
     return genericSubscribe(fn, this._actionSubscribers)
   }
 
-  // 响应式地侦听 fn 的返回值，当值改变时调用回调函数
+  // 响应式地侦听 getter 的返回值，当值改变时调用回调函数
   watch (getter, cb, options) {
     if (process.env.NODE_ENV !== 'production') {
       assert(typeof getter === 'function', `store.watch only accepts a function.`)
@@ -274,7 +275,7 @@ function resetStoreVM (store, state, hot) {
     // use computed to leverage its lazy-caching mechanism（使用 computed 的懒加载机制）
     // 根据 key 访问 store.getters 的某一个 getter 的时候，实际上就是访问了 store._vm[key]，也就是 computed[key]
     // 在执行 computed[key] 对应的函数的时候，会执行 rawGetter(local.state,...) 方法，那么就会访问到 store.state
-    // 进而访问到 store._vm_data.$$state，这样就建立了一个依赖关系。当 store.state 发生变化的时候，下一次再访问 store.getters 的时候会重新计算。
+    // 进而访问到 store._vm._data.$$state，这样就建立了一个依赖关系。当 store.state 发生变化的时候，下一次再访问 store.getters 的时候会重新计算。
     computed[key] = () => fn(store)
     Object.defineProperty(store.getters, key, {
       get: () => store._vm[key],
